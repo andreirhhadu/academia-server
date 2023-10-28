@@ -29,19 +29,37 @@ app.get('/', (req, res) => {
 })
 
 app.post('/notes/add-note', async (req, res) => {
-  const { title, content, author } = req.body
-
-  if ( !title || !content || !author ) {
-    res.status(500).send("Eroare: titlu, content sau author lipsa.")
-  }
-
-  const newDocument = new NoteModel({ title, content, author, createdAt: new Date() })
-
   try {
+    const { title, content, author } = req.body
+    if ( !title || !content || !author ) {
+      res.status(500).send("Eroare: titlu, content sau author lipsa.")
+    }
+
+    const newDocument = new NoteModel({ title, content, author, createdAt: new Date() })
+
     var result = await newDocument.save()
     res.status(200).send(result)
   } catch (e) {
-    res.status(500).send(e)
+    console.log(e)
+  }
+})
+
+app.post('/notes/delete-note', async (req, res) => {
+  try {
+    const { id } = req.body
+    if ( !id || id == '' ) {
+      res.status(500).send("Eroare: id lipsa.")
+    }
+
+    const result = await NoteModel.findByIdAndRemove(id)
+    if (!result) {
+      res.statusCode(401).json({ error: 'Acest id nu exista.' })
+      return
+    }
+    res.status(200).send(result)
+  } catch (e) {
+    console.log(e)
+    res.status(500).send('Eroare: undefined error')
   }
 })
 
